@@ -1,6 +1,22 @@
 {
-  "stateNumber": "42",
+  "stateNumber": "2",
   "symbolNumber": "94",
-  "s0": "0",
-  "sigma": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~"
+  "s": "0",
+  "f": [
+    "1",
+    "2"
+  ],
+  "sigma": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~",
+  "state": {
+    "0": {
+      "1234": "1",
+      "d": "0"
+    },
+    "1": {
+      "2": "0"
+    }
+  },
+  "keyword": [
+    "int", "char"
+  ]
 }

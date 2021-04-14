@@ -1,5 +1,6 @@
 package lexical;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -7,8 +8,7 @@ import org.json.simple.parser.ParseException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class DFA {
 
@@ -19,6 +19,7 @@ public class DFA {
     private int s;              // initial state
     private List<Integer> f;    // final state
 
+    @SuppressWarnings("unchecked")
     public DFA() {
         /* parse from json file */
         try {
@@ -27,6 +28,13 @@ public class DFA {
             /* initialize state number and symbol number */
             this.N = Integer.parseInt((String) object.get("stateNumber"));
             this.M = Integer.parseInt((String) object.get("symbolNumber"));
+            /* initialize initial state and final states */
+            this.s = Integer.parseInt((String) object.get("s"));
+            this.f = new ArrayList<>();
+            JSONArray finalStates = (JSONArray) object.get("f");
+            for (String finalState : (Iterable<String>) finalStates) {
+                f.add(Integer.parseInt(finalState));
+            }
             /* initialize sigma */
             this.sigma = new char[M];
             String symbol = (String) object.get("sigma");
@@ -36,11 +44,24 @@ public class DFA {
             /* initialize transfer function */
             this.delta = new int[N][M];
             // initialize using -1
-            int[] minus = new int[M];
-            Arrays.fill(minus, -1);
-            Arrays.fill(delta, minus);
-            // TODO parse from json
-
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < M; j++) {
+                    this.delta[i][j] = -1;
+                }
+            }
+            // parse from json
+            JSONObject transfer = (JSONObject) object.get("state");
+            for (int i = 0; i < N; i++) {
+                System.out.println("count: " + i);
+                JSONObject state = (JSONObject) transfer.get(String.valueOf(i));
+                Set<String> keys = state.keySet();
+                for (String key : keys) {
+                    System.out.println("key of state " + i + " is " + key);
+                    for (int j = 0; j < key.length(); j++) {
+                        this.delta[i][getIndexOfChar(key.charAt(j))] = Integer.parseInt((String) state.get(key));
+                    }
+                }
+            }
         } catch (FileNotFoundException e) {
             System.out.println("json file cannot be found.");
         } catch (IOException e) {
