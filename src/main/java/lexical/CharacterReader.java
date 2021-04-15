@@ -20,6 +20,7 @@ public class CharacterReader {
             while ((c = reader.read()) != -1) {
                 characters.add((char) c);
             }
+            characters.add('@');
         } catch (FileNotFoundException exception) {
             System.out.println("cannot find file " + filename);
         } catch (IOException exception) {
@@ -29,12 +30,5 @@ public class CharacterReader {
 
     public List<Character> getBuffer() {
         return characters;
-    }
-
-    public static void main(String[] args) {
-        CharacterReader reader = new CharacterReader("src/main/java/lexical/test.c");
-        for (char c : reader.getBuffer()) {
-            System.out.print(c);
-        }
     }
 }
