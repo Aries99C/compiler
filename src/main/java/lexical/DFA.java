@@ -12,7 +12,6 @@ import java.util.*;
 
 public class DFA {
 
-    private int N;                          // number of state
     private int M;                          // number of symbol
     private char[] sigma;                   // symbol set
     private int[][] delta;                  // transfer function
@@ -32,7 +31,8 @@ public class DFA {
             JSONParser parser = new JSONParser();
             JSONObject object = (JSONObject) parser.parse(new FileReader("src/main/java/lexical/dfa.json"));
             /* initialize state number and symbol number */
-            this.N = Integer.parseInt((String) object.get("stateNumber"));
+            // number of state
+            int n = Integer.parseInt((String) object.get("stateNumber"));
             this.M = Integer.parseInt((String) object.get("symbolNumber"));
             /* initialize initial state and final states */
             this.s = Integer.parseInt((String) object.get("s"));
@@ -48,16 +48,16 @@ public class DFA {
                 this.sigma[i] = symbol.charAt(i);
             }
             /* initialize transfer function */
-            this.delta = new int[N][M];
+            this.delta = new int[n][M];
             // initialize using -1
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < n; i++) {
                 for (int j = 0; j < M; j++) {
                     this.delta[i][j] = Integer.MIN_VALUE;
                 }
             }
             // parse from json
             JSONObject transfer = (JSONObject) object.get("state");
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < n; i++) {
                 JSONObject state = (JSONObject) transfer.get(String.valueOf(i));
                 if (state == null) {
                     continue;
@@ -172,6 +172,7 @@ public class DFA {
                     }
                     // single comment
                     else if (finalInfo.get(forwardState).equals("SCM")) {
+                        // do nothing
                     }
                     // multiline comment
                     else if (finalInfo.get(forwardState).equals("MCM")) {
