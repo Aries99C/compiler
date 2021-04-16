@@ -22,8 +22,8 @@ public class DFA {
     private Set<String> keywords;           // key words
     private Map<Integer, String> finalInfo; // info for final state
     private Map<Integer, String> errorInfo; // info for error state
-    private Map<String, String[]> tokens;   // save tokens
-    private Map<String, Integer> errors;    // save errors
+    private List<Token> tokens;             // save tokens
+    private List<ErrorInfo> errors;         // save errors
 
     @SuppressWarnings("unchecked")
     public DFA() {
@@ -59,6 +59,9 @@ public class DFA {
             JSONObject transfer = (JSONObject) object.get("state");
             for (int i = 0; i < N; i++) {
                 JSONObject state = (JSONObject) transfer.get(String.valueOf(i));
+                if (state == null) {
+                    continue;
+                }
                 Set<String> keys = state.keySet();
                 for (String key : keys) {
                     for (int j = 0; j < key.length(); j++) {
@@ -87,8 +90,8 @@ public class DFA {
                 this.errorInfo.put(Integer.parseInt(errorState), (String) errorMap.get(errorState));
             }
             /* initialize token table and error table */
-            this.tokens = new HashMap<>();
-            this.errors = new HashMap<>();
+            this.tokens = new ArrayList<>();
+            this.errors = new ArrayList<>();
         } catch (FileNotFoundException e) {
             System.out.println("json file cannot be found.");
         } catch (IOException e) {
@@ -102,31 +105,37 @@ public class DFA {
     public void run(char[] input) {
         int forwardIndex = -1;                  // save index of latest final state
         int forwardState = Integer.MIN_VALUE;   // save latest final state
+        int forwardLine = 1;                    // save latest line
         String forwardStr = "";                 // save latest string
         String currentStr = "";                 // save current string
+        int currentLine = 1;                    // save current line
         int currentState = this.s;
-        for (int i = 0; i <= input.length; i++) {
+        for (int i = 0; i < input.length; i++) {
             char nextChar = input[i];
+            // EOF
+            if (nextChar == '$' && currentStr.isEmpty()) {
+                break;
+            }
             int nextState = nextState(currentState, nextChar);
             /* successor state exists */
             if (nextState != Integer.MIN_VALUE) {
                 currentState = nextState;
                 currentStr = currentStr + nextChar;
+                if (currentStr.length() == 1) {
+                    currentStr = currentStr.trim();
+                }
+                // next line
+                if (nextChar == '\n') currentLine++;
                 /* successor state is final */
                 if (f.contains(currentState)) {
                     forwardIndex = i;
                     forwardState = currentState;
                     forwardStr = currentStr;
+                    forwardLine = currentLine;
                 }
                 /* successor state is error */
                 if (e.contains(currentState)) {
-                    int line = getLine(input, i);
-                    errors.put(errorInfo.get(currentState) + " " + currentStr, line);
-                    // back to initial state
-                    forwardIndex = -1;
-                    forwardState = Integer.MIN_VALUE;
-                    forwardStr = "";
-                    currentState = this.s;
+                    errors.add(new ErrorInfo(errorInfo.get(currentState), getLine(input, i)));
                 }
             }
             /* no successor state */
@@ -135,40 +144,125 @@ public class DFA {
                 if (forwardState > 0) {
                     // keyword
                     if (keywords.contains(forwardStr)) {
-                        tokens.put(forwardStr, new String[]{forwardStr.toUpperCase(Locale.ROOT), "_"});
+                        tokens.add(new Token(forwardStr, new String[]{forwardStr.toUpperCase(Locale.ROOT), "_"}));
                     }
                     // identifier
-                    else if (finalInfo.get(forwardState).equals("identifier")) {
-                        tokens.put(forwardStr, new String[]{"identifier", forwardStr});
+                    else if (finalInfo.get(forwardState).equals("ID")) {
+                        tokens.add(new Token(forwardStr, new String[]{"ID", forwardStr}));
+                    }
+                    // number
+                    else if (finalInfo.get(forwardState).equals("DINT")) {
+                        tokens.add(new Token(forwardStr, new String[]{"DINT", forwardStr}));
+                    }
+                    else if (finalInfo.get(forwardState).equals("OCT")) {
+                        tokens.add(new Token(forwardStr, new String[]{"OCT", forwardStr}));
+                    }
+                    else if (finalInfo.get(forwardState).equals("HEX")) {
+                        tokens.add(new Token(forwardStr, new String[]{"HEX", forwardStr}));
+                    }
+                    else if (finalInfo.get(forwardState).equals("FP")) {
+                        tokens.add(new Token(forwardStr, new String[]{"FP", forwardStr}));
+                    }
+                    // string and char
+                    else if (finalInfo.get(forwardState).equals("STR")) {
+                        tokens.add(new Token(forwardStr, new String[]{"STR", forwardStr}));
+                    }
+                    else if (finalInfo.get(forwardState).equals("CH")) {
+                        tokens.add(new Token(forwardStr, new String[]{"CH", forwardStr}));
+                    }
+                    // single comment
+                    else if (finalInfo.get(forwardState).equals("SCM")) {
+                    }
+                    // multiline comment
+                    else if (finalInfo.get(forwardState).equals("MCM")) {
+                        // do nothing
                     }
                     // else symbol
                     else {
-                        tokens.put(forwardStr, new String[]{finalInfo.get(forwardState), "_"});
+                        tokens.add(new Token(forwardStr, new String[]{finalInfo.get(forwardState), "_"}));
                     }
                     // back to initial state
                     currentState = this.s;
+                    currentStr = "";
                     i = forwardIndex;
+                    currentLine = forwardLine;
                     forwardIndex = -1;
                     forwardState = Integer.MIN_VALUE;
                     forwardStr = "";
                 }
                 // cannot back
                 else {
-                    // panic-mode recovery
-                    while (nextState(currentState, input[i]) == Integer.MIN_VALUE) {
-                        i++;
+                    /* error handle */
+                    // illegal symbol
+                    if (getIndexOfChar(nextChar) == -1) {
+                        errors.add(new ErrorInfo(errorInfo.get(-1) + ": " + nextChar, getLine(input, i)));
+                        // panic-mode recovery
+                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE) {
+                            i++;
+                        }
+                        i--;
                     }
-                    i--;
+                    // string not closed
+                    else if (currentState == 10) {
+                        errors.add(new ErrorInfo(errorInfo.get(-2) + ": " + currentStr, getLine(input, i)));
+                        // panic-mode recovery
+                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE && input[i] != '\n' && i < input.length) {
+                            i++;
+                        }
+                        i--;
+                        // back to initial state
+                        currentState = this.s;
+                        currentStr = "";
+                        currentLine = forwardLine;
+                        forwardIndex = -1;
+                        forwardState = Integer.MIN_VALUE;
+                        forwardStr = "";
+                    }
+                    // char not closed
+                    else if (currentState == 14) {
+                        errors.add(new ErrorInfo(errorInfo.get(-3) + ": " + currentStr, getLine(input, i)));
+                        // panic-mode recovery
+                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE && input[i] != '\n' && i < input.length) {
+                            i++;
+                        }
+                        // back to initial state
+                        currentState = this.s;
+                        currentStr = "";
+                        currentLine = forwardLine;
+                        forwardIndex = -1;
+                        forwardState = Integer.MIN_VALUE;
+                        forwardStr = "";
+                    }
+                    // '\' except legal symbol
+                    else if (currentState == 12 || currentState == 16) {
+                        errors.add(new ErrorInfo(errorInfo.get(-4) + ": " + currentStr + nextChar, getLine(input, i)));
+                        // panic-mode recovery
+                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE && input[i] != '\n' && i < input.length) {
+                            i++;
+                        }
+                        i--;
+                        // back to initial state
+                        currentState = this.s;
+                        currentStr = "";
+                        currentLine = forwardLine;
+                        forwardIndex = -1;
+                        forwardState = Integer.MIN_VALUE;
+                        forwardStr = "";
+                    }
+                    // comment not closed
+                    else if (currentState == 62 || currentState == 63) {
+                        errors.add(new ErrorInfo(errorInfo.get(-5) + " " + currentStr, getLine(input, i)));
+                    }
                 }
             }
         }
     }
 
-    public Map<String, String[]> getTokens() {
+    public List<Token> getTokens() {
         return tokens;
     }
 
-    public Map<String, Integer> getErrors() {
+    public List<ErrorInfo> getErrors() {
         return errors;
     }
 
@@ -184,23 +278,14 @@ public class DFA {
     private int nextState(int currentState, char c) {
         int index = getIndexOfChar(c);
         if (index == -1) {
-            return -1;
+            return Integer.MIN_VALUE;
         } else {
             return delta[currentState][index];
         }
     }
 
-    private boolean isFinal(int state) {
-        for (int finalState : this.f) {
-            if (state == finalState) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private int getLine(char[] input, int index) {
-        int line = 0;
+        int line = 1;
         int count = 0;
         for (char c : input) {
             count++;
@@ -212,9 +297,5 @@ public class DFA {
             }
         }
         return -1;
-    }
-
-    public static void main(String[] args) {
-        DFA dfa = new DFA();
     }
 }

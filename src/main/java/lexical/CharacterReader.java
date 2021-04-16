@@ -20,7 +20,7 @@ public class CharacterReader {
             while ((c = reader.read()) != -1) {
                 characters.add((char) c);
             }
-            characters.add('@');
+            characters.add('$');
         } catch (FileNotFoundException exception) {
             System.out.println("cannot find file " + filename);
         } catch (IOException exception) {
