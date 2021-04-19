@@ -108,9 +108,15 @@ public class DFA {
         int forwardLine = 1;                    // save latest line
         String forwardStr = "";                 // save latest string
         String currentStr = "";                 // save current string
+        String lastStr;                         // save last string
+        int lasState;                           // save last state
         int currentLine = 1;                    // save current line
-        int currentState = this.s;
+        int currentState = this.s;              // save current state
         for (int i = 0; i < input.length; i++) {
+            // update last info
+            lastStr = currentStr;
+            lasState = currentState;
+            // get next char
             char nextChar = input[i];
             // EOF
             if (nextChar == '$' && currentStr.isEmpty()) {
@@ -119,6 +125,7 @@ public class DFA {
             int nextState = nextState(currentState, nextChar);
             /* successor state exists */
             if (nextState != Integer.MIN_VALUE) {
+                //update current info
                 currentState = nextState;
                 currentStr = currentStr + nextChar;
                 if (currentStr.length() == 1) {
@@ -133,15 +140,11 @@ public class DFA {
                     forwardStr = currentStr;
                     forwardLine = currentLine;
                 }
-                /* successor state is error */
-                if (e.contains(currentState)) {
-                    errors.add(new ErrorInfo(errorInfo.get(currentState), getLine(input, i)));
-                }
             }
             /* no successor state */
             else {
                 // back
-                if (forwardState > 0) {
+                if (forwardState > 0 && currentState != 62 && currentState != 63) {
                     // keyword
                     if (keywords.contains(forwardStr)) {
                         tokens.add(new Token(forwardStr, new String[]{forwardStr.toUpperCase(Locale.ROOT), "_"}));
@@ -191,68 +194,51 @@ public class DFA {
                     forwardState = Integer.MIN_VALUE;
                     forwardStr = "";
                 }
-                // cannot back
+                // error handle
                 else {
-                    /* error handle */
-                    // illegal symbol
+                    if (nextChar != '\n' && nextChar != '\r' && nextChar != '$') {
+                        currentStr = currentStr + nextChar;
+                    }
+                    // illegal character
                     if (getIndexOfChar(nextChar) == -1) {
                         errors.add(new ErrorInfo(errorInfo.get(-1) + ": " + nextChar, getLine(input, i)));
-                        // panic-mode recovery
-                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE) {
-                            i++;
-                        }
-                        i--;
                     }
                     // string not closed
                     else if (currentState == 10) {
                         errors.add(new ErrorInfo(errorInfo.get(-2) + ": " + currentStr, getLine(input, i)));
-                        // panic-mode recovery
-                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE && input[i] != '\n' && i < input.length) {
-                            i++;
-                        }
-                        i--;
-                        // back to initial state
-                        currentState = this.s;
-                        currentStr = "";
-                        currentLine = forwardLine;
-                        forwardIndex = -1;
-                        forwardState = Integer.MIN_VALUE;
-                        forwardStr = "";
                     }
                     // char not closed
                     else if (currentState == 14) {
                         errors.add(new ErrorInfo(errorInfo.get(-3) + ": " + currentStr, getLine(input, i)));
-                        // panic-mode recovery
-                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE && input[i] != '\n' && i < input.length) {
-                            i++;
-                        }
-                        // back to initial state
-                        currentState = this.s;
-                        currentStr = "";
-                        currentLine = forwardLine;
-                        forwardIndex = -1;
-                        forwardState = Integer.MIN_VALUE;
-                        forwardStr = "";
                     }
-                    // '\' except legal symbol
+                    // illegal symbol after '\'
                     else if (currentState == 12 || currentState == 16) {
-                        errors.add(new ErrorInfo(errorInfo.get(-4) + ": " + currentStr + nextChar, getLine(input, i)));
-                        // panic-mode recovery
-                        while (nextState(currentState, input[i]) == Integer.MIN_VALUE && input[i] != '\n' && i < input.length) {
-                            i++;
-                        }
-                        i--;
-                        // back to initial state
-                        currentState = this.s;
-                        currentStr = "";
-                        currentLine = forwardLine;
-                        forwardIndex = -1;
-                        forwardState = Integer.MIN_VALUE;
-                        forwardStr = "";
+                        errors.add(new ErrorInfo(errorInfo.get(-4) + ": \\" + nextChar, getLine(input, i)));
                     }
                     // comment not closed
                     else if (currentState == 62 || currentState == 63) {
-                        errors.add(new ErrorInfo(errorInfo.get(-5) + " " + currentStr, getLine(input, i)));
+                        errors.add(new ErrorInfo(errorInfo.get(-5) + ": " + currentStr, getLine(input, i)));
+                    }
+                    // back to last state and string
+                    currentState = lasState;
+                    currentStr = lastStr;
+                    i++;
+                    while (i < input.length) {
+                        char c = input[i];
+                        if (c == '\n' || c == '$') {
+                            // back to initial state
+                            currentState = this.s;
+                            currentStr = "";
+                            forwardIndex = -1;
+                            forwardState = Integer.MIN_VALUE;
+                            forwardStr = "";
+                            break;
+                        } else {
+                            if (nextState(currentState, input[i]) != Integer.MIN_VALUE) {
+                                i--;
+                                break;
+                            } else i++;
+                        }
                     }
                 }
             }

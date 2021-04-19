@@ -6,8 +6,11 @@ struct type {
 
 int main() {
     long _ = 1000;              // test _ as id
-    float _abc_1 = 2.9;         // test _abc_1 as id, float
+    float abc = 0.9             // test float
+    float _abc_1 = +2.9;        // test _abc_1 as id, float
     double d = 1e10;            // test 1e10
+    double c = 1e-10;           // test 1e-10
+    double b = 1e+10;           // test 1e+10
     int count = 0;              // test 0
     int oct = 00;               // test oct
     int hex = 0xab;             // test hex
@@ -37,8 +40,8 @@ int main() {
     test comment in expr
     */ '\n';    // test '\n'
     printf("%c, c);
-    return 0;
     char c = 'ab';
-    char f = '\';
+    char f = '\pn';
+    return 0;
 }
 /* not closed comment
