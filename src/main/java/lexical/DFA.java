@@ -147,31 +147,31 @@ public class DFA {
                 if (forwardState > 0 && currentState != 62 && currentState != 63) {
                     // keyword
                     if (keywords.contains(forwardStr)) {
-                        tokens.add(new Token(forwardStr, new String[]{forwardStr.toUpperCase(Locale.ROOT), "_"}));
+                        tokens.add(new Token(forwardStr, new String[]{forwardStr.toUpperCase(Locale.ROOT), "_"}, forwardLine));
                     }
                     // identifier
-                    else if (finalInfo.get(forwardState).equals("ID")) {
-                        tokens.add(new Token(forwardStr, new String[]{"ID", forwardStr}));
+                    else if (finalInfo.get(forwardState).equals("IDN")) {
+                        tokens.add(new Token(forwardStr, new String[]{"IDN", forwardStr}, forwardLine));
                     }
                     // number
                     else if (finalInfo.get(forwardState).equals("DINT")) {
-                        tokens.add(new Token(forwardStr, new String[]{"DINT", forwardStr}));
+                        tokens.add(new Token(forwardStr, new String[]{"DINT", forwardStr}, forwardLine));
                     }
                     else if (finalInfo.get(forwardState).equals("OCT")) {
-                        tokens.add(new Token(forwardStr, new String[]{"OCT", forwardStr}));
+                        tokens.add(new Token(forwardStr, new String[]{"OCT", forwardStr}, forwardLine));
                     }
                     else if (finalInfo.get(forwardState).equals("HEX")) {
-                        tokens.add(new Token(forwardStr, new String[]{"HEX", forwardStr}));
+                        tokens.add(new Token(forwardStr, new String[]{"HEX", forwardStr}, forwardLine));
                     }
                     else if (finalInfo.get(forwardState).equals("FP")) {
-                        tokens.add(new Token(forwardStr, new String[]{"FP", forwardStr}));
+                        tokens.add(new Token(forwardStr, new String[]{"FP", forwardStr}, forwardLine));
                     }
                     // string and char
                     else if (finalInfo.get(forwardState).equals("STR")) {
-                        tokens.add(new Token(forwardStr, new String[]{"STR", forwardStr}));
+                        tokens.add(new Token(forwardStr, new String[]{"STR", forwardStr}, forwardLine));
                     }
                     else if (finalInfo.get(forwardState).equals("CH")) {
-                        tokens.add(new Token(forwardStr, new String[]{"CH", forwardStr}));
+                        tokens.add(new Token(forwardStr, new String[]{"CH", forwardStr}, forwardLine));
                     }
                     // single comment
                     else if (finalInfo.get(forwardState).equals("SCM")) {
@@ -183,7 +183,7 @@ public class DFA {
                     }
                     // else symbol
                     else {
-                        tokens.add(new Token(forwardStr, new String[]{finalInfo.get(forwardState), "_"}));
+                        tokens.add(new Token(forwardStr, new String[]{finalInfo.get(forwardState), "_"}, forwardLine));
                     }
                     // back to initial state
                     currentState = this.s;
@@ -229,6 +229,7 @@ public class DFA {
                             // back to initial state
                             currentState = this.s;
                             currentStr = "";
+                            currentLine++;
                             forwardIndex = -1;
                             forwardState = Integer.MIN_VALUE;
                             forwardStr = "";

@@ -36,7 +36,7 @@ public class Lexer {
         System.out.println("****************************************");
         System.out.println("Token:");
         for (Token token : tokens) {
-            System.out.println(String.format("%-10s", token.str) + "\t" + "< " + String.format("%-6s", token.info[0])  + "\t, " + String.format("%-6s", token.info[1]) + " >");
+            System.out.println(String.format("%-10s", token.str) + "\t" + "< " + String.format("%-6s", token.info[0])  + "\t, " + String.format("%-6s", token.info[1]) + " >\t" + token.line);
         }
         System.out.println("****************************************");
         System.out.println("Error:");
