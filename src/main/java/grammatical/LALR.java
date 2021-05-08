@@ -112,20 +112,22 @@ public class LALR {
         List<TreeNode> nodes = new ArrayList<>();
         int state;
         int j = 0;
+        int line = 0;
         Token token = tokens.get(j);
         while (token != null) {
-            int count = 0;
+            line = token.line;
             state = stateStack.peek();
             StateEntry stateEntry = stateEntries.get(state);
 
             int symbolIndex = symbolMap.get(token.info[0]);
-            TreeNode node = new TreeNode(symbolIndex, token);
+            TreeNode node = new TreeNode(symbolIndex, token, true);
             nodes.add(node);
             System.out.println("state: " + state + " read: " + token.info[0]);
 
+           boolean error = true;
             for (TableEntry tableEntry : stateEntry.entries) {
                 if (tableEntry.symbolIndex == symbolIndex) {
-                    count = -100;
+                    error = false;
                     int action = tableEntry.action;
                     if (action == 1) {
                         state = tableEntry.value;
@@ -137,11 +139,12 @@ public class LALR {
                         int productionIndex = tableEntry.value;
                         String left = productions.get(productionIndex).left;
                         if (!symbolMap.containsKey(left)) {
-                                break;
+                            break;
                         }
                         int leftIndex = symbolMap.get(left);
                         System.out.println("action: " + tableEntry.action + " value: " + tableEntry.value);
-                        TreeNode parent = new TreeNode(leftIndex, new Token(left, new String[]{left, "_"}, token.line));
+                        assert token != null;
+                        TreeNode parent = new TreeNode(leftIndex, new Token(left, new String[]{left, "_"}, token.line), false);
                         for (int i = 0; i < productions.get(productionIndex).rights.length; i++) {
                             TreeNode child = tokenStack.pop();
                             stateStack.pop();
@@ -166,7 +169,6 @@ public class LALR {
                     else if (action == 4) {
                         return nodes.get(nodes.size()-2);
                     }
-                    count++;
                 }
                 if (j < tokens.size()) {
                     token = tokens.get(j);
@@ -174,7 +176,10 @@ public class LALR {
                     token = null;
                 }
             }
+            if (error) {
+                break;
+            }
         }
-        return null;
+        return new TreeNode(1, new Token("error", new String[]{"error", "error"}, line), true);
     }
 }

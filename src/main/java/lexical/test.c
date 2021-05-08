@@ -1,19 +1,21 @@
-int fun0(float f){
-    int i;
-    char t[1][1] = {{1}{1}};
-    if(a > 0){
-      i += 1;
+int main() {
+    int x = 0;
+    long y[2][1] = {{1}{100}};
+    float z[3];
+    float f[1];
+    if (x == 1) {
+        printf("");
+    } else {
+        printf("%c", f);
+        x = 8;
+        z = f;
     }
-    else{
-      i = 2*i;
+    while (x > 1 || x < -1) {
+        x -= 1;
     }
-    while(a>0){
+    function(x);
+}}
 
-    }
-    i = function();
-}
-
-int function () {
-     int i = 0;
-     return i;
+void function(int x) {
+    x = 3;
 }
