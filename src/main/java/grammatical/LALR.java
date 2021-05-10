@@ -20,11 +20,13 @@ public class LALR {
     public final List<Production> productions = new ArrayList<>();
 
     private void getStates() {
+        // open LALR.xml
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
             Document document = builder.parse("src/main/java/grammatical/LALR.xml");
 
+            // read tree nodes of states
             NodeList stateList = document.getElementsByTagName("LALRState");
             for (int i = 0; i < stateList.getLength(); i++) {
                 Element state = (Element) stateList.item(i);
@@ -33,6 +35,7 @@ public class LALR {
                 String attribute = state.getAttribute("Index");
                 stateEntry.stateIndex = Integer.parseInt(attribute);
 
+                // read action according to symbol and state
                 NodeList children = state.getChildNodes();
                 List<TableEntry> tableEntries = new ArrayList<>();
                 for (int j = 0; j <children.getLength(); j++) {
@@ -59,11 +62,13 @@ public class LALR {
     }
 
     private void getSymbolMap() {
+        // open LALR.xml
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document document = db.parse("src/main/java/grammatical/LALR.xml");
 
+            // read terminal symbols
             NodeList symbols = document.getElementsByTagName("Symbol");
             for (int i = 0; i < symbols.getLength(); i++)
             {
@@ -130,13 +135,16 @@ public class LALR {
     }
 
     public TreeNode parse(List<Token> tokens) {
+        // token stack
         Stack<TreeNode> tokenStack = new Stack<>();
+        // state stack
         Stack<Integer> stateStack = new Stack<>();
         stateStack.push(0);
         List<TreeNode> nodes = new ArrayList<>();
         int state;
         int j = 0;
         int line = 0;
+        // keep reading from buffer of token list
         Token token = tokens.get(j);
         while (token != null) {
             line = token.line;
@@ -146,19 +154,22 @@ public class LALR {
             int symbolIndex = symbolMap.get(token.info[0]);
             TreeNode node = new TreeNode(symbolIndex, token, true);
             nodes.add(node);
-//            System.out.println("state: " + state + " read: " + token.info[0]);
 
-           boolean error = true;
+            /* find action according to state and token */
+            // record find action flag
+            boolean error = true;
             for (TableEntry tableEntry : stateEntry.entries) {
                 if (tableEntry.symbolIndex == symbolIndex) {
                     error = false;
                     int action = tableEntry.action;
+                    /* shift action */
                     if (action == 1) {
                         state = tableEntry.value;
                         tokenStack.push(node);
                         stateStack.push(state);
                         j++;
                     }
+                    /* reduce action */
                     else if (action == 2) {
                         int productionIndex = tableEntry.value;
                         String left = productions.get(productionIndex).left;
@@ -166,30 +177,33 @@ public class LALR {
                             break;
                         }
                         int leftIndex = symbolMap.get(left);
-//                        System.out.println("action: " + tableEntry.action + " value: " + tableEntry.value);
                         assert token != null;
+                        // pop elements from token stack and state stack
                         TreeNode parent = new TreeNode(leftIndex, new Token(left, new String[]{left, "_"}, token.line), false);
                         for (int i = 0; i < productions.get(productionIndex).rights.length; i++) {
                             TreeNode child = tokenStack.pop();
                             stateStack.pop();
+                            // link between parent and children
                             child.parent = parent;
                             parent.children.add(child);
                         }
                         Collections.reverse(parent.children);
+                        // push parent
                         tokenStack.push(parent);
                         nodes.add(parent);
 
+                        // goto action
                         state = stateStack.peek();
                         StateEntry gotoState = stateEntries.get(state);
                         for (TableEntry gotoTable : gotoState.entries) {
                             if (gotoTable.symbolIndex == leftIndex && gotoTable.action == 3) {
                                 state = gotoTable.value;
-//                                System.out.println("action: " + gotoTable.action + " value: " + tableEntry.value);
                                 stateStack.push(state);
                                 break;
                             }
                         }
                     }
+                    /* acc action */
                     else if (action == 4) {
                         return nodes.get(nodes.size()-2);
                     }
@@ -200,6 +214,7 @@ public class LALR {
                     token = null;
                 }
             }
+            // no action
             if (error) {
                 break;
             }
