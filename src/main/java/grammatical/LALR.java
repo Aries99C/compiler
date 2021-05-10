@@ -10,10 +10,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class LALR {
@@ -90,7 +87,7 @@ public class LALR {
             while ((line=reader.readLine())!=null) {
                 String left = line.split("::=")[0].trim();
                 String right = line.split("::=")[1].trim();
-                production = new Production(left, right.split(" "));
+                production = new Production(left, right.split("\\s+"));
                 productions.add(production);
             }
             reader.close();
@@ -99,10 +96,37 @@ public class LALR {
         }
     }
 
+    private void writeProductions() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/grammatical/grammar.txt"))) {
+            for (Production production : productions) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("<").append(production.left).append("> ::= ");
+                for (String right : production.rights) {
+                    boolean find = false;
+                    for (Production findLeft : productions) {
+                        if (findLeft.left.equals(right)) {
+                            find = true;
+                            break;
+                        }
+                    }
+                    if (find) {
+                        builder.append("<").append(right).append("> ");
+                    } else {
+                        builder.append(right).append(" ");
+                    }
+                }
+                builder.append("\n");
+                writer.write(builder.toString());
+            }
+            writer.write("\"Start Symbol\" = <translation_unit>");
+        } catch (Exception ignored) {}
+    }
+
     public LALR() {
         getStates();
         getSymbolMap();
         getProductions();
+        writeProductions();
     }
 
     public TreeNode parse(List<Token> tokens) {
@@ -122,7 +146,7 @@ public class LALR {
             int symbolIndex = symbolMap.get(token.info[0]);
             TreeNode node = new TreeNode(symbolIndex, token, true);
             nodes.add(node);
-            System.out.println("state: " + state + " read: " + token.info[0]);
+//            System.out.println("state: " + state + " read: " + token.info[0]);
 
            boolean error = true;
             for (TableEntry tableEntry : stateEntry.entries) {
@@ -142,7 +166,7 @@ public class LALR {
                             break;
                         }
                         int leftIndex = symbolMap.get(left);
-                        System.out.println("action: " + tableEntry.action + " value: " + tableEntry.value);
+//                        System.out.println("action: " + tableEntry.action + " value: " + tableEntry.value);
                         assert token != null;
                         TreeNode parent = new TreeNode(leftIndex, new Token(left, new String[]{left, "_"}, token.line), false);
                         for (int i = 0; i < productions.get(productionIndex).rights.length; i++) {
@@ -160,7 +184,7 @@ public class LALR {
                         for (TableEntry gotoTable : gotoState.entries) {
                             if (gotoTable.symbolIndex == leftIndex && gotoTable.action == 3) {
                                 state = gotoTable.value;
-                                System.out.println("action: " + gotoTable.action + " value: " + tableEntry.value);
+//                                System.out.println("action: " + gotoTable.action + " value: " + tableEntry.value);
                                 stateStack.push(state);
                                 break;
                             }

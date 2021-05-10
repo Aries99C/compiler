@@ -1,7 +1,6 @@
 package lexical;
 
 import java.util.List;
-import java.util.Map;
 
 public class Lexer {
 
@@ -20,13 +19,7 @@ public class Lexer {
         }
     }
 
-    public void parse() {
-        /* run dfa */
-        DFA dfa = new DFA();
-        dfa.run(input);
-        /* output */
-        this.tokens = dfa.getTokens();
-        this.errors = dfa.getErrors();
+    public void show() {
         System.out.println("****************************************");
         System.out.println("Input:");
         for (int i = 0; i < input.length-1; i++) {
@@ -46,6 +39,15 @@ public class Lexer {
         System.out.println("****************************************");
     }
 
+    public void parse() {
+        /* run dfa */
+        DFA dfa = new DFA();
+        dfa.run(input);
+        /* output */
+        this.tokens = dfa.getTokens();
+        this.errors = dfa.getErrors();
+    }
+
     public List<Token> getTokens() {
         return tokens;
     }
@@ -57,5 +59,6 @@ public class Lexer {
     public static void main(String[] args) {
         Lexer lexer = new Lexer("src/main/java/lexical/test.c");
         lexer.parse();
+        lexer.show();
     }
 }

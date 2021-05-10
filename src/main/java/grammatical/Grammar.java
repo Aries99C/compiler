@@ -55,6 +55,6 @@ public class Grammar {
         LALR lalr = new LALR();
         TreeNode root = lalr.parse(tokens);
         updateTree(root);
-        showTree(root, 1);
+        showTree(root, 0);
     }
 }
