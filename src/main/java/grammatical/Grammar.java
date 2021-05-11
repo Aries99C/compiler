@@ -33,6 +33,9 @@ public class Grammar {
     }
 
     public static void showTree(TreeNode root, int depth) {
+        if (root.token.info[0].contains("semantic")) {
+            return;
+        }
         StringBuffer output = new StringBuffer();
         output.append("  ".repeat(Math.max(0, depth)));
         output.append(root.token.info[0]);
