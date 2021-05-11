@@ -6,6 +6,7 @@ int main() {
     float f[1];
     if (x == 1) {
         printf("");
+        y[0][0] = 2;
     } else {
         printf("%c", f);
         x = 8;
