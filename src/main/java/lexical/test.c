@@ -1,33 +1,36 @@
-int main() {
-    char* ch = '\t';
-    int x = 0;
-    long y[2][1];
-    float z[3];
-    float f[1];
-    if (x == 1) {
-        printf("");
-        y[0][0] = 2;
-    } else {
-        printf("%c", f);
-        x = 8;
-        z = f;
-    }
-    while (x > 1 || x < -1) {
-        x -= 1;
-        y[1][0] = 3.14;
-        printf("%f", y[1][0]);
-    }
-    do {
-        func(y);
-    } while (y > 0);
-    func(x);
-}
-
-struct student {
+struct Student {
     int id;
-    char* name;
+    int name;
+} student;
+
+void main() {
+    int x;
+    char y;
+    int z[2];
+    int p[2][2];
+    int count;
+    x = 5;
+    y = '\t';
+    z[1] = 0;
+    p[1][0] = 6;
+    x = z[1];
+    x = p[1][0];
+    if (x < 10) {
+        y = '\n';
+    } else {
+        y = '\r';
+    }
+    count = 0;
+    do {
+        count = count + 1;
+        x = x - 1;
+        swap(x, 2);
+    } while (count < 10 && x > 0)
 }
 
-void func(int x) {
-    x = 3;
+void swap(int a, int b) {
+    int tmp;
+    tmp = a;
+    a = b;
+    b = tmp;
 }

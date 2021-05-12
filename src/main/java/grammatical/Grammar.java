@@ -25,13 +25,6 @@ public class Grammar {
         return root.token.line;
     }
 
-    public static void printChildren(TreeNode root, int level) {
-        System.out.println(root.token.info[0] + ": " + level);
-        for (TreeNode child : root.children) {
-            printChildren(child, level+1);
-        }
-    }
-
     public static void showTree(TreeNode root, int depth) {
         if (root.token.info[0].contains("semantic")) {
             return;
@@ -39,11 +32,16 @@ public class Grammar {
         StringBuffer output = new StringBuffer();
         output.append("  ".repeat(Math.max(0, depth)));
         output.append(root.token.info[0]);
-        if (!root.token.info[1].equals("_")) {
-            output.append(":").append(root.token.info[1]);
+        if (root.token.info[0].contains("Syntax error")) {
+            output.append(root.token.info[1]);
+            System.out.println(output);
+        } else {
+            if (!root.token.info[1].equals("_")) {
+                output.append(":").append(root.token.info[1]);
+            }
+            output.append("(").append(root.token.line).append(")");
+            System.out.println(output);
         }
-        output.append("(").append(root.token.line).append(")");
-        System.out.println(output);
 
         for (TreeNode child : root.children) {
             showTree(child, depth+1);

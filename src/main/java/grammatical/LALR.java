@@ -123,7 +123,7 @@ public class LALR {
                 builder.append("\n");
                 writer.write(builder.toString());
             }
-            writer.write("\"Start Symbol\" = <translation_unit>");
+            writer.write("\"Start Symbol\" = <program>");
         } catch (Exception ignored) {}
     }
 
@@ -141,7 +141,7 @@ public class LALR {
         Stack<Integer> stateStack = new Stack<>();
         stateStack.push(0);
         List<TreeNode> nodes = new ArrayList<>();
-        int state;
+        int state = 0;
         int j = 0;
         int line = 0;
         // keep reading from buffer of token list
@@ -219,6 +219,7 @@ public class LALR {
                 break;
             }
         }
-        return new TreeNode(1, new Token("error", new String[]{"error", "error"}, line), true);
+        assert token != null;
+        return new TreeNode(1, new Token("error", new String[]{"Syntax error at Line [" + line + "]: ", "[" + state + ", " + token.info[0] + "]"}, line), true);
     }
 }
