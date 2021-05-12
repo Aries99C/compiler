@@ -42,6 +42,7 @@ value::=value DIV value
 value::=value MOD value
 value::=SLP value SRP
 value::=IDN
+value::=IDN DOT IDN
 value::=list
 value::=const
 const::=DINT

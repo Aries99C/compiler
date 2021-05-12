@@ -1,6 +1,6 @@
 struct Student {
     int id;
-    int name;
+    char name[10];
 } student;
 
 void main() {
