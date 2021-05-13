@@ -174,15 +174,15 @@
     "double", "else", "enum", "extern", "float", "for", "goto", "if", "int",
     "long", "register", "return", "short", "signed", "sizeof", "static",
     "struct", "switch", "typedef", "unsigned", "union", "void", "volatile", "while",
-    "call", "proc", "record", "true", "false", "bool"
+    "call", "proc", "record", "true", "false", "bool", "then"
   ],
 
   "final_info": {
     "1": "IDN",
     "2": "DINT",
     "3": "DINT",
-    "4": "OCT",
-    "6": "HEX",
+    "4": "DINT",
+    "6": "DINT",
     "7": "FP",
     "8": "FP",
     "11": "STR",
@@ -199,7 +199,7 @@
     "26": "COMA",
     "27": "PLUS",
     "28": "MINUS",
-    "29": "TM",
+    "29": "MUL",
     "30": "DIV",
     "31": "MOD",
     "32": "INC",

@@ -1,11 +1,13 @@
 package grammatical;
 
+import lexical.ErrorInfo;
 import lexical.Token;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import semantic.Symbol;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,6 +20,9 @@ public class LALR {
     public final List<StateEntry> stateEntries = new ArrayList<>();
     public final Map<String, Integer> symbolMap = new HashMap<>();
     public final List<Production> productions = new ArrayList<>();
+    public final List<Symbol> symbols = new ArrayList<>();
+    public final List<ErrorInfo> errorInfos = new ArrayList<>();
+
 
     private void getStates() {
         // open LALR.xml
@@ -117,13 +122,16 @@ public class LALR {
                     if (find) {
                         builder.append("<").append(right).append("> ");
                     } else {
-                        builder.append(right).append(" ");
+                        if (!right.equals("epsilon")) {
+                            builder.append(right);
+                        }
+                        builder.append(" ");
                     }
                 }
                 builder.append("\n");
                 writer.write(builder.toString());
             }
-            writer.write("\"Start Symbol\" = <program>");
+            writer.write("\"Start Symbol\" = <P>");
         } catch (Exception ignored) {}
     }
 
@@ -134,13 +142,30 @@ public class LALR {
         writeProductions();
     }
 
+    public void addSymbol(String id, int line) {
+        boolean find = false;
+        for (Symbol symbol : symbols) {
+            if (symbol.name.equals(id)) {
+                errorInfos.add(new ErrorInfo("duplicate declaration " + id, line));
+                find = true;
+                break;
+            }
+        }
+        if (!find) {
+            symbols.add(new Symbol(id));
+        }
+    }
+
     public TreeNode parse(List<Token> tokens) {
         // token stack
-        Stack<TreeNode> tokenStack = new Stack<>();
+        Stack<TreeNode> symbolStack = new Stack<>();
         // state stack
         Stack<Integer> stateStack = new Stack<>();
         stateStack.push(0);
+        // node list
         List<TreeNode> nodes = new ArrayList<>();
+
+
         int state = 0;
         int j = 0;
         int line = 0;
@@ -154,6 +179,7 @@ public class LALR {
             int symbolIndex = symbolMap.get(token.info[0]);
             TreeNode node = new TreeNode(symbolIndex, token, true);
             nodes.add(node);
+//            System.out.println("state: " + state + ", token: " + token.info[0]);
 
             /* find action according to state and token */
             // record find action flag
@@ -164,32 +190,48 @@ public class LALR {
                     int action = tableEntry.action;
                     /* shift action */
                     if (action == 1) {
+                        // semantic
+
+                        // syntax
                         state = tableEntry.value;
-                        tokenStack.push(node);
+                        symbolStack.push(node);
                         stateStack.push(state);
                         j++;
+//                        System.out.println("shift to state: " + state);
                     }
                     /* reduce action */
                     else if (action == 2) {
                         int productionIndex = tableEntry.value;
                         String left = productions.get(productionIndex).left;
+                        String[] rights = productions.get(productionIndex).rights;
+//                        System.out.println("reduce by production: " + productionIndex);
+
+                        /* syntax */
                         if (!symbolMap.containsKey(left)) {
                             break;
                         }
                         int leftIndex = symbolMap.get(left);
-                        assert token != null;
                         // pop elements from token stack and state stack
+                        assert token != null;
                         TreeNode parent = new TreeNode(leftIndex, new Token(left, new String[]{left, "_"}, token.line), false);
-                        for (int i = 0; i < productions.get(productionIndex).rights.length; i++) {
-                            TreeNode child = tokenStack.pop();
-                            stateStack.pop();
-                            // link between parent and children
-                            child.parent = parent;
-                            parent.children.add(child);
+                        for (String right : rights) {
+                            if (!right.equals("epsilon")) {
+                                TreeNode child = symbolStack.pop();
+                                stateStack.pop();
+                                // link between parent and children
+                                child.parent = parent;
+                                parent.children.add(child);
+                            }
                         }
                         Collections.reverse(parent.children);
+
+                        // semantic
+                        // empty production
+
+                        // non-empty production
+
                         // push parent
-                        tokenStack.push(parent);
+                        symbolStack.push(parent);
                         nodes.add(parent);
 
                         // goto action
@@ -199,6 +241,7 @@ public class LALR {
                             if (gotoTable.symbolIndex == leftIndex && gotoTable.action == 3) {
                                 state = gotoTable.value;
                                 stateStack.push(state);
+//                                System.out.println("goto: " + state);
                                 break;
                             }
                         }

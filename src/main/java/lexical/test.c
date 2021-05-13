@@ -1,36 +1,38 @@
-struct Student {
-    int id;
-    char name[10];
-} student;
-
-void main() {
-    int x;
-    char y;
-    int z[2];
-    int p[2][2];
-    int count;
-    x = 5;
-    y = '\t';
-    z[1] = 0;
-    p[1][0] = 6;
-    x = z[1];
-    x = p[1][0];
-    if (x < 10) {
-        y = '\n';
-    } else {
-        y = '\r';
-    }
-    count = 0;
-    do {
-        count = count + 1;
-        x = x - 1;
-        swap(x, 2);
-    } while (count < 10 && x > 0)
+struct student{
+    int id ;
+    char name ;
 }
 
-void swap(int a, int b) {
-    int tmp;
-    tmp = a;
-    a = b;
-    b = tmp;
+int x;
+int y;
+char ch;
+float f;
+int[10] array;
+int[3][3] matrix;
+
+x = 0xf;
+x = 0;
+y = 10;
+ch = '\t';
+f = 3.14;
+
+if (x < 5) then
+    x = x + 1;
+else
+    x = x + 2;
+
+x = 0;
+y = 0;
+
+while (x < 10) do
+    array[x] = x;
+    x = x + 1;
+
+array[0] = 0;
+matrix[1][1] = 1;
+
+proc int getsum(int a, int b) {
+	return a + b;
 }
+
+call getsum(x, y);
