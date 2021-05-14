@@ -20,8 +20,6 @@ public class LALR {
     public final List<StateEntry> stateEntries = new ArrayList<>();
     public final Map<String, Integer> symbolMap = new HashMap<>();
     public final List<Production> productions = new ArrayList<>();
-    public final List<Symbol> symbols = new ArrayList<>();
-    public final List<ErrorInfo> errorInfos = new ArrayList<>();
 
 
     private void getStates() {
@@ -142,20 +140,6 @@ public class LALR {
         writeProductions();
     }
 
-    public void addSymbol(String id, int line) {
-        boolean find = false;
-        for (Symbol symbol : symbols) {
-            if (symbol.name.equals(id)) {
-                errorInfos.add(new ErrorInfo("duplicate declaration " + id, line));
-                find = true;
-                break;
-            }
-        }
-        if (!find) {
-            symbols.add(new Symbol(id));
-        }
-    }
-
     public TreeNode parse(List<Token> tokens) {
         // token stack
         Stack<TreeNode> symbolStack = new Stack<>();
@@ -190,8 +174,6 @@ public class LALR {
                     int action = tableEntry.action;
                     /* shift action */
                     if (action == 1) {
-                        // semantic
-
                         // syntax
                         state = tableEntry.value;
                         symbolStack.push(node);

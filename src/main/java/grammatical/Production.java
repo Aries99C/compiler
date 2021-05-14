@@ -4,10 +4,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Production {
-    public int index = 0;
     public String left;
     public String[] rights;
-    public String hoping = "";
 
     public Production(String left, String[] rights) {
         this.left = left;
