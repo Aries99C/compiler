@@ -7,6 +7,7 @@
 <DM1> ::=  
 <DM2> ::=  
 <T> ::= <X> <TM> <C> 
+<T> ::= MUL <T> 
 <TM> ::=  
 <X> ::= INT 
 <X> ::= FLOAT 
@@ -17,6 +18,8 @@
 <M> ::= <X> IDN 
 <S> ::= <L> EQS <E> SEMI 
 <S> ::= IDN EQS <E> SEMI 
+<S> ::= IDN DOT IDN EQS <E> SEMI 
+<S> ::= IDN DOT <L> EQS <E> SEMI 
 <S> ::= IF SLP <B> SRP <BM> THEN <S> <N> ELSE <BM> <S> 
 <S> ::= WHILE <BM> SLP <B> SRP DO <BM> <S> 
 <S> ::= CALL IDN SLP <EList> SRP SEMI 
@@ -31,6 +34,7 @@
 <G> ::= <F> 
 <F> ::= SLP <E> SRP 
 <F> ::= DINT 
+<F> ::= IDN DOT <F> 
 <F> ::= IDN 
 <F> ::= FP 
 <F> ::= CH 

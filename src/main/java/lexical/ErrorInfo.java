@@ -3,9 +3,9 @@ package lexical;
 public class ErrorInfo {
 
     // error info
-    String info;
+    public String info;
     // error line
-    int line;
+    public int line;
 
     public ErrorInfo(String info, int line) {
         this.info = info;

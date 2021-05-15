@@ -5,6 +5,7 @@ import lexical.Token;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Grammar {
 
@@ -40,6 +41,9 @@ public class Grammar {
                 output.append(":").append(root.token.info[1]);
             }
             output.append("(").append(root.token.line).append(")");
+            for (Map.Entry<String, String> entry : root.attribute.entrySet()) {
+                output.append(" ").append(entry.getKey()).append("=").append(entry.getValue());
+            }
             System.out.println(output);
         }
 
