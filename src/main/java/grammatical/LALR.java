@@ -180,7 +180,12 @@ public class LALR {
                     int action = tableEntry.action;
                     /* shift action */
                     if (action == 1) {
-
+                        // semantic
+                        if (symbolStack.size() > 0 && symbolStack.peek().token.info[0].equals("S")) {
+                            if (symbolStack.peek().attribute.get("nextList") != null) {
+                                backPatch(turnList(symbolStack.peek().attribute.get("nextList")), nextQuad());
+                            }
+                        }
                         // syntax
                         state = tableEntry.value;
                         symbolStack.push(node);
@@ -477,10 +482,10 @@ public class LALR {
                                 }
                                 break;
                             } case 18 :{
+                                parent.attribute.put("nextList", "");
                                 // S::=L = E ; {if L.array!=null or E.addr!=null then
                                 // if L.type!=E.type then error;
                                 // else gen(L.array[L.offset]=E.addr);}
-                                parent.attribute.put("nextList", String.valueOf(nextQuad()));
                                 if (parent.children.get(0).attribute.get("array") == null || parent.children.get(2).attribute.get("addr") == null) {
                                     break;
                                 } else {
@@ -493,10 +498,10 @@ public class LALR {
                                 }
                                 break;
                             } case 19: {
+                                parent.attribute.put("nextList", "");
                                 // S::=IDN = E ; {p=lookUp(IDN.lexeme); if p==null then error;
                                 // else if p.type!=E.type then error;
                                 // else gen(p=E.addr);}
-                                parent.attribute.put("nextList", String.valueOf(nextQuad()));
                                 TreeNode symbol = lookUp(parent.children.get(0).token.str);
                                 if (symbol != null) {
                                     if (parent.children.get(2).attribute.get("addr") == null) {
@@ -513,8 +518,8 @@ public class LALR {
                                 }
                                 break;
                             } case 25: {
+                                parent.attribute.put("nextList", "");
                                 // S::=RETURN E ; {gen(return E.addr);}
-                                parent.attribute.put("nextList", String.valueOf(nextQuad()));
                                 add3Code.add("return " + parent.children.get(1).attribute.get("addr"));
                                 tuple4Code.add("(return, _, _, " + parent.children.get(1).attribute.get("addr") + ")");
                                 break;
@@ -533,10 +538,10 @@ public class LALR {
                                 parent.attribute.put("params", parent.children.get(0).attribute.get("params") + ";" + parent.children.get(2).attribute.get("addr"));
                                 break;
                             } case 24: {
+                                parent.attribute.put("nextList", "");
                                 // S::=CALL IDN ( EList ) ; {p=lookUp(IDN.lexeme); if p==null || p.type!=proc then error;
                                 // else if IDN.types!=EList.types then error;
                                 // else n=0; for E in EList {gen(param E.addr); n=n+1;} gen(call IDN.lexeme , n)}
-                                parent.attribute.put("nextList", String.valueOf(nextQuad()));
                                 TreeNode symbol = lookUp(parent.children.get(1).token.str);
                                 if (symbol != null && symbol.attribute.get("type").equals("proc")) {
                                     if (!symbol.attribute.get("types").equals(parent.children.get(3).attribute.get("types"))) {

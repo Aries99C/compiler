@@ -25,11 +25,11 @@ else
     x = x + 2;
 
 x = 0;
-y = 0;
+y = 3 * 3.1;
+y = 3 + 3.1;
 
-while (x < 10) do
+while (x < 10 || x > 20) do
     array[x] = x;
-    x = x + 1;
 
 array[0] = 0;
 matrix[2][1] = 1;
@@ -37,7 +37,9 @@ student.id = 1;
 x = student.i;
 x = student.x;
 x = student.id;
+x = stu.id;
 x = array[0];
+x = matrix[1][1];
 x = x + 1;
 x = x * 3;
 
