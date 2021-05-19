@@ -31,9 +31,9 @@ y = 3 + 3.1;
 while (x < 10 || x > 20) do
     array[x] = x;
 
+array[1.0] = 0;
 array[0] = 0;
 matrix[2][1] = 1;
-student.id = 1;
 x = student.i;
 x = student.x;
 x = student.id;
@@ -46,5 +46,9 @@ x = x * 3;
 proc int getsum(int a, int b) {
 	return a + b;
 }
+
+call get(x, 1);
+
+call getsum(x);
 
 call getsum(x, 1);
