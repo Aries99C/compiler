@@ -9,3 +9,7 @@
 ### 语法分析器使用方法
 
 语法分析器在src/main/java/grammatical文件夹中，主程序为Grammar类，直接运行Grammar类的main方法即可。
+
+### 语义分析器使用方法
+
+语法分析器在src/main/java/semantic文件夹中，主程序为Analyzer类，直接运行Analyzer类的main方法即可。
